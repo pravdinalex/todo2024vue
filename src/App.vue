@@ -9,12 +9,12 @@ import { storeToRefs } from 'pinia'
 
 const tasksStore = useTasksStore()
 const {
-  shownTasks
+  shownTasks,
 } = storeToRefs(tasksStore)
 
 try {
   const api = new LocalStorageTasksApi()
-  tasksStore.init(api) // TODO: why error?
+  tasksStore.init(api)
 } catch (e) {
   console.error(e)
 }

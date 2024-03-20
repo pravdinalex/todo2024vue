@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import type { Id, INewTask, ITask, TaskSortField } from '@/types/Tasks'
 import type { TasksStorageApi } from '@/api/tasksStorageApi'
+import { getTimestamp } from '@/helpers/dateUtils'
 
 export const useTasksStore = defineStore('tasks', () => {
 
@@ -22,7 +23,7 @@ export const useTasksStore = defineStore('tasks', () => {
         )
       } else if (sortBy.value === 'completed') {
         res = res.sort((a, b) =>
-          sortDirection.value * (a.completed ?? 0 - b.completed ?? 0)
+          sortDirection.value * ((a.completed ?? 0) - (b.completed ?? 0))
         )
       }
     }
@@ -30,7 +31,11 @@ export const useTasksStore = defineStore('tasks', () => {
     return res
   })
 
-  // ---
+  // --- helpers ---
+
+  function getTaskIndex(id: Id): number {
+    return allTasks.value.findIndex((task) => task.id === id)
+  }
 
   function nextSortDirection(current: number): number {
     if (current === 1) {
@@ -42,27 +47,40 @@ export const useTasksStore = defineStore('tasks', () => {
     }
   }
 
-  // ---
+  // --- public ---
 
   function init(_api: TasksStorageApi) {
     api = _api
-    allTasks.value = api.getAllTasks() // TODO: for now we don't need any loader, but...
+    allTasks.value = api.getAllTasks()
   }
 
   function addTask(newTask: INewTask) {
-    // TODO
+    const task = api?.insertTask(newTask)
+    if (task) {
+      allTasks.value.push(task)
+    }
   }
 
   function updateTask(task: ITask) {
-    // TODO
+    api?.updateTask(task)
+  }
+
+  function completeTask(id: Id, comlete: boolean) {
+    const index = getTaskIndex(id)
+    if (index >= 0) {
+      const task = allTasks.value[index]
+      task.completed = comlete ? getTimestamp() : null
+      api?.updateTask(task)
+    }
   }
 
   function deleteTask(id: Id) {
-    // TODO
-  }
+    api?.deleteTask(id)
 
-  function completeTask(comlete: boolean) {
-    // TODO
+    const index = getTaskIndex(id)
+    if (index >= 0) {
+      allTasks.value.splice(index, 1)
+    }
   }
 
   function toggleSort(_sortBy: TaskSortField) {
@@ -72,10 +90,16 @@ export const useTasksStore = defineStore('tasks', () => {
   }
 
   return {
+    // methods
     init,
-    sortBy,
-    shownTasks,
+    addTask,
+    updateTask,
+    completeTask,
+    deleteTask,
     toggleSort,
-
+    // data
+    shownTasks,
+    sortBy,
+    sortDirection,
   }
 })

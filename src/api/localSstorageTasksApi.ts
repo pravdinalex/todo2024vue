@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid'
 import { TasksStorageApi } from '@/api/tasksStorageApi'
 import type { Id, INewTask, ITask } from '@/types/Tasks'
+import { getTimestamp } from '@/helpers/dateUtils'
 
 // when we'll change task definition, old ones shouldn't be taken
 export const STORE_VERSION = 'v.1.0'
@@ -40,10 +41,6 @@ export class LocalStorageTasksApi extends TasksStorageApi {
 
   // --- helpers ---
 
-  private getTimestamp() {
-    return +(new Date())
-  }
-
   private taskKey(id: Id): string {
     return `${TASK_KEY_PREFIX}/${id}`
   }
@@ -61,8 +58,8 @@ export class LocalStorageTasksApi extends TasksStorageApi {
   insertTask(newTask: INewTask): ITask {
     const task: ITask = {
       id: nanoid(),
-      created: this.getTimestamp(),
-      modified: this.getTimestamp(),
+      created: getTimestamp(),
+      modified: getTimestamp(),
       completed: null,
       ...newTask,
     }
