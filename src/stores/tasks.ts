@@ -49,38 +49,53 @@ export const useTasksStore = defineStore('tasks', () => {
 
   // --- public ---
 
-  function init(_api: TasksStorageApi) {
+  async function init(_api: TasksStorageApi) {
     api = _api
-    allTasks.value = api.getAllTasks()
+    allTasks.value = await api.getAllTasks()
   }
 
-  function addTask(newTask: INewTask) {
-    const task = api?.insertTask(newTask)
+  async function addTask(newTask: INewTask) {
+    if (!api) {
+      return
+    }
+    const task = await api.insertTask(newTask)
     if (task) {
       allTasks.value.push(task)
     }
   }
 
-  function updateTask(task: ITask) {
-    api?.updateTask(task)
+  async function updateTask(task: ITask) {
+    if (!api) {
+      return
+    }
+    await api.updateTask(task)
   }
 
-  function completeTask(id: Id, comlete: boolean) {
+  async function completeTask(id: Id, comlete: boolean) {
+    if (!api) {
+      return
+    }
     const index = getTaskIndex(id)
     if (index >= 0) {
       const task = allTasks.value[index]
       task.completed = comlete ? getTimestamp() : null
-      api?.updateTask(task)
+      await api.updateTask(task)
     }
   }
 
-  function deleteTask(id: Id) {
-    api?.deleteTask(id)
+  async function deleteTask(id: Id) {
+    if (!api) {
+      return
+    }
 
     const index = getTaskIndex(id)
     if (index >= 0) {
       allTasks.value.splice(index, 1)
     }
+
+    // Here and at other api calls: we use optimistic UI update,
+    // if it's critical, if api call fail we should revert local changes
+    await api.deleteTask(id)
   }
 
   function toggleSort(_sortBy: TaskSortField) {

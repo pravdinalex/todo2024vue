@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid'
 import { TasksStorageApi } from '@/api/tasksStorageApi'
 import type { Id, INewTask, ITask } from '@/types/Tasks'
 import { getTimestamp } from '@/helpers/dateUtils'
+import { isLocalStorageAvailable } from '@/helpers/featureTest'
 
 // when we'll change task definition, old ones shouldn't be taken
 export const STORE_VERSION = 'v.1.0'
@@ -13,9 +14,10 @@ export class LocalStorageTasksApi extends TasksStorageApi {
   constructor() {
     super()
 
-    if (!localStorage) {
-      // TODO: here we need more complicated check if it's critical
-      throw new Error(`Localstorage isnt available or turned on`)
+    // usually, we don't check localStorage availability,
+    // but for this task it's a thing you'll probably will check :)
+    if (!isLocalStorageAvailable) {
+      throw new Error(`Localstorage isn't available or turned off`)
     }
   }
 
@@ -55,7 +57,7 @@ export class LocalStorageTasksApi extends TasksStorageApi {
 
   // --- public ---
 
-  insertTask(newTask: INewTask): ITask {
+  async insertTask(newTask: INewTask) {
     const task: ITask = {
       id: nanoid(),
       created: getTimestamp(),
@@ -72,17 +74,17 @@ export class LocalStorageTasksApi extends TasksStorageApi {
     return task
   }
 
-  updateTask(task: ITask) {
+  async updateTask(task: ITask) {
     this.saveData(this.taskKey(task.id), task)
   }
 
-  deleteTask(deleteId: Id) {
+  async deleteTask(deleteId: Id) {
     const ids = this.getIndex()
     this.saveIndex(ids.filter(id => id !== deleteId))
     this.deleteData(this.taskKey(deleteId))
   }
 
-  getAllTasks(): ITask[] {
+  async getAllTasks() {
     const ids = this.getIndex()
     const res: ITask[] = []
     ids.forEach((taskId) => {
