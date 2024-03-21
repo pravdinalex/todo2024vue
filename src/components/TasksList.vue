@@ -1,12 +1,10 @@
 <template>
-  <section class="tasks-list">
-    <h3 class="mb-2">Your tasks</h3>
-
+  <div class="tasks-list">
     <table class="va-table va-table--clickable va-table--hoverable tasks-list__table">
       <thead>
       <tr>
         <th>#</th>
-        <th>Title</th>
+        <th>Title / Description</th>
         <th>Created</th>
         <th>Completed</th>
       </tr>
@@ -18,34 +16,89 @@
         >
           <td class="text-lg">{{ i + 1 }}</td>
           <td>
-            <div class="text-lg">{{ task.title }}</div>
-            <div class="text-sm">{{ task.description }}</div>
-            <VaButton
-              icon="edit"
-              @click="emit('start-edit', task)"
-            />
+            <div class="flex justify-space-between">
+              <div>
+                <div class="text-lg">{{ task.title }}</div>
+                <div class="text-sm truncate max-w-sm">{{ task.description }}</div>
+              </div>
+              <VaButton
+                class="align-self-start !grow-0"
+                icon="edit"
+                preset="secondary"
+                text-color="info"
+                size="small"
+                @click="emit('start-edit', task)"
+              >
+                edit
+              </VaButton>
+            </div>
           </td>
           <td>{{ formatTimestamp(task.created) }}</td>
-          <td>{{ task.completed ? formatTimestamp(task.completed) : '' }}</td>
+          <td>
+            <div class="flex align-center">
+              <VaButton
+                v-if="!task.completed"
+                class="ml-auto !grow-0"
+                icon="check"
+                preset="secondary"
+                size="small"
+                text-color="info"
+                @click="completeTask(task.id, true)"
+              >
+                complete
+              </VaButton>
+
+              <template v-else>
+                <VaIcon
+                  class="material-icons !grow-0 mr-2"
+                  color="success"
+                  size="large"
+                >
+                  check
+                </VaIcon>
+                <span class="mr-4">{{ formatTimestamp(task.completed) }}</span>
+                <VaButton
+                  class="align-self-center !grow-0 ml-auto"
+                  icon="undo"
+                  preset="secondary"
+                  size="small"
+                  text-color="info"
+                  title="mark incomplete"
+                  @click="completeTask(task.id, false)"
+                >
+                  undo
+                </VaButton>
+              </template>
+            </div>
+          </td>
         </tr>
-      <template v-if="!shownTasks.length">
-        <tr>
-          <td colspan="4">No tasks to show</td>
+        <tr
+          v-if="!shownTasks.length"
+          :key="'nothing-to-show'"
+        >
+          <td
+            colspan="4"
+            class="va-text-center"
+          >
+            <div class="inline-flex align-center justify-center">
+              <VaIcon class="material-icons mr-4" color="info">info</VaIcon>
+              No tasks to show
+            </div>
+          </td>
         </tr>
-      </template>
       </tbody>
     </table>
-
-  </section>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { useTasksStore } from '@/stores/tasks'
 import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
+import { VaIcon } from 'vuestic-ui'
 import { LocalStorageTasksApi } from '@/api/localSstorageTasksApi'
 import { formatTimestamp } from '@/helpers/dateUtils'
-import type { ITask } from '@/types/Tasks'
+import type { ITask, Id } from '@/types/Tasks'
 
 const emit = defineEmits<{
   (e: 'start-edit', payload: ITask): void,
@@ -62,10 +115,17 @@ const api = new LocalStorageTasksApi()
 await tasksStore.init(api) // <- this makes component async
 isInitialized.value = true
 
+function completeTask(id: Id, completed: boolean) {
+  tasksStore.completeTask(id, completed)
+}
 </script>
 
 <style scoped>
+.tasks-list {
+
+}
+
 .tasks-list__table {
-  min-width: 600px;
+  width: 100%;
 }
 </style>

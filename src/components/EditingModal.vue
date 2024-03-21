@@ -5,9 +5,9 @@
     @ok="submit"
     @cancel="close"
     @close="close"
-    ok-text="Save"
+    :ok-text="isEditing ? 'Save' : 'Add'"
   >
-    <h3 class="mb-4">{{ modalTitle }}</h3>
+    <h3 class="mb-4">{{ isEditing ? 'Editing task' : 'New task' }}</h3>
     <VaForm class="flex flex-col gap-4">
       <VaInput
         v-model="currentState.title"
@@ -71,9 +71,7 @@ watch(() => props.task, (task) => {
   immediate: true,
 })
 
-const modalTitle = computed<string>(() =>
-  props.task ? 'Editing task' : 'New task'
-)
+const isEditing = computed<boolean>(() => !!props.task)
 
 // ---
 
