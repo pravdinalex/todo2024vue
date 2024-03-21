@@ -99,11 +99,10 @@
 </template>
 
 <script setup lang="ts">
-import { useTasksStore } from '@/stores/tasks'
+import { ref, watch, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import { ref, watch } from 'vue'
 import { VaIcon, VaCheckbox } from 'vuestic-ui'
-import { LocalStorageTasksApi } from '@/api/localSstorageTasksApi'
+import { useTasksStore } from '@/stores/tasks'
 import { formatTimestamp } from '@/helpers/dateUtils'
 import type { ITask, Id } from '@/types/Tasks'
 
@@ -121,8 +120,6 @@ const {
   shownTasks,
 } = storeToRefs(tasksStore)
 
-const isInitialized = ref(false)
-
 const deleteSelection = ref<Id[]>([])
 
 watch(() => props.deleteMode, () => {
@@ -133,9 +130,9 @@ watch(deleteSelection, (ids: Id[]) => {
   emit('delete-selection', ids)
 })
 
-const api = new LocalStorageTasksApi()
-await tasksStore.init(api) // <- this makes component async
-isInitialized.value = true
+onMounted(() => {
+  tasksStore.loadAllTasks()
+})
 
 function completeTask(id: Id, completed: boolean) {
   tasksStore.completeTask(id, completed)

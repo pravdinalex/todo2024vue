@@ -51,6 +51,12 @@ export const useTasksStore = defineStore('tasks', () => {
 
   async function init(_api: TasksStorageApi) {
     api = _api
+  }
+
+  async function loadAllTasks() {
+    if (!api) {
+      return
+    }
     allTasks.value = await api.getAllTasks()
   }
 
@@ -111,6 +117,7 @@ export const useTasksStore = defineStore('tasks', () => {
   return {
     // methods
     init,
+    loadAllTasks,
     addTask,
     updateTask,
     completeTask,

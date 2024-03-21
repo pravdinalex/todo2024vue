@@ -1,6 +1,7 @@
 <template>
-  <Suspense>
-    <div class="app p-4">
+  <div class="app p-4">
+    <NoLocalStorageWarning v-if="!isLoadedOk" />
+    <template v-else>
       <header class="flex align-center justify-space-between mb-4">
         <h1 class="mb-2 mr-auto text-2xl">Your tasks</h1>
         <div class="!grow-0">
@@ -62,22 +63,29 @@
           @close="stopEditing"
         />
       </main>
-    </div>
-    <template #fallback>
-      Loading...
     </template>
-  </Suspense>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { ref, reactive } from 'vue'
 import { VaButton } from 'vuestic-ui'
 import TasksList from '@/components/TasksList.vue'
 import EditingModal from '@/components/EditingModal.vue'
 import type { ITask, Id } from '@/types/Tasks'
 import { useTasksStore } from '@/stores/tasks'
+import { LocalStorageTasksApi } from '@/api/localSstorageTasksApi'
+import NoLocalStorageWarning from '@/components/NoLocalStorageWarning.vue'
 
 const tasksStore = useTasksStore()
+const isLoadedOk = ref(true)
+
+try {
+  const api = new LocalStorageTasksApi()
+  tasksStore.init(api)
+} catch (e) {
+  isLoadedOk.value = false
+}
 
 // TODO: edition and deletion may be extracted to composables/stores
 
