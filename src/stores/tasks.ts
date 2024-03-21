@@ -68,7 +68,11 @@ export const useTasksStore = defineStore('tasks', () => {
     if (!api) {
       return
     }
-    await api.updateTask(task)
+    const index = getTaskIndex(task.id)
+    if (index >= 0) {
+      allTasks.value[index] = {...allTasks.value[index], ...task}
+      await api.updateTask(task)
+    }
   }
 
   async function completeTask(id: Id, comlete: boolean) {

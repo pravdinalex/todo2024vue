@@ -1,29 +1,47 @@
 <template>
-  <pre>{{ shownTasks }}</pre>
+  <Suspense>
+    <main class="p-4">
+      <VaButton
+        @click="editing.active = true"
+        icon="add"
+        color="info"
+        class="mb-4"
+      >
+        New task
+      </VaButton>
+      <TasksList
+        @start-edit="startEditing"
+      />
+      <EditingModal
+        v-if="editing.active"
+        :task="editing.task"
+        @close="editing.active = false"
+      />
+    </main>
+    <template #fallback>
+      Loading...
+    </template>
+  </Suspense>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { LocalStorageTasksApi } from '@/api/localSstorageTasksApi'
-import { useTasksStore } from '@/stores/tasks'
-import { storeToRefs } from 'pinia'
+import { reactive } from 'vue'
+import { VaButton } from 'vuestic-ui'
+import TasksList from '@/components/TasksList.vue'
+import EditingModal from '@/components/EditingModal.vue'
+import { ITask } from '@/types/Tasks'
 
-const tasksStore = useTasksStore()
-const {
-  shownTasks,
-} = storeToRefs(tasksStore)
+const editing = reactive<{
+  active: boolean,
+  task: ITask | null,
+}>({
+  active: false,
+  task: null,
+})
 
-const isInitialized = ref(false)
-const isLoaded = ref(false)
-
-try {
-  const api = new LocalStorageTasksApi()
-  await tasksStore.init(api)
-  isInitialized.value = true
-} catch (e) {
-  console.error(e)
-} finally {
-  isLoaded.value = true
+function startEditing(task: ITask) {
+  editing.task = task
+  editing.active = true
 }
 
 </script>
