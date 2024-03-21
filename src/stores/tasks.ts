@@ -111,6 +111,9 @@ export const useTasksStore = defineStore('tasks', () => {
   function toggleSort(_sortBy: TaskSortField) {
     if (sortBy.value === _sortBy) {
       sortDirection.value = nextSortDirection(sortDirection.value)
+    } else {
+      sortBy.value = _sortBy
+      sortDirection.value = 1
     }
   }
 

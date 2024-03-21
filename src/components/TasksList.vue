@@ -3,9 +3,25 @@
     <thead>
     <tr>
       <th>#</th>
-      <th>Title / Description</th>
+      <th>
+        <div class="flex justify-space-between align-center">
+          <span>Title / Description</span>
+          <SortToggler
+            class="!grow-0"
+            field="title"
+          />
+        </div>
+      </th>
       <th>Created</th>
-      <th>Completed</th>
+      <th>
+        <div class="flex justify-space-between align-center">
+          <span>Completed</span>
+          <SortToggler
+            class="!grow-0"
+            field="completed"
+          />
+        </div>
+      </th>
       <th v-if="props.deleteMode">For deletion</th>
     </tr>
     </thead>
@@ -105,6 +121,7 @@ import { VaIcon, VaCheckbox } from 'vuestic-ui'
 import { useTasksStore } from '@/stores/tasks'
 import { formatTimestamp } from '@/helpers/dateUtils'
 import type { ITask, Id } from '@/types/Tasks'
+import SortToggler from '@/components/SortToggler.vue'
 
 const props = defineProps<{
   deleteMode: boolean,
@@ -118,6 +135,8 @@ const emit = defineEmits<{
 const tasksStore = useTasksStore()
 const {
   shownTasks,
+  sortBy,
+  sortDirection,
 } = storeToRefs(tasksStore)
 
 const deleteSelection = ref<Id[]>([])
