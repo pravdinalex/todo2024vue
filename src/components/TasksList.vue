@@ -150,7 +150,7 @@ watch(deleteSelection, (ids: Id[]) => {
 })
 
 onMounted(() => {
-  tasksStore.loadAllTasks()
+  tasksStore.loadAllTasks() // TODO: some loader needed in general case
 })
 
 function completeTask(id: Id, completed: boolean) {

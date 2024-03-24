@@ -6,7 +6,7 @@ import { getTimestamp } from '@/helpers/dateUtils'
 
 export const useTasksStore = defineStore('tasks', () => {
 
-  let api: TasksStorageApi | null = null
+  let api: TasksStorageApi | null = null // TODO: wrap store to always have api defined
 
   const allTasks = ref<ITask[]>([])
 
@@ -14,15 +14,15 @@ export const useTasksStore = defineStore('tasks', () => {
   const sortDirection = ref(0)
 
   const shownTasks = computed<ITask[]>(() => {
-    let res: ITask[] = [...allTasks.value]
+    const res: ITask[] = [...allTasks.value]
 
     if (sortDirection.value) {
       if (sortBy.value === 'title') {
-        res = res.sort((a, b) =>
+        res.sort((a, b) =>
           sortDirection.value * (a.title.localeCompare(b.title))
         )
       } else if (sortBy.value === 'completed') {
-        res = res.sort((a, b) =>
+        res.sort((a, b) =>
           sortDirection.value * ((a.completed ?? 0) - (b.completed ?? 0))
         )
       }
